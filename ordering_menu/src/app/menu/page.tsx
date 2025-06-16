@@ -1,5 +1,5 @@
 import Image from 'next/image'
- 
+
 export default function Page() {
   return (
     <div className="flex flex-row justify-center gap-8 p-6">
