@@ -6,11 +6,18 @@ interface MenuItem {
   id: number
   name: string
   description: string
+  price: number
+  imageUrl: string
   createdAt: string
 }
 
 export default function Home() {
-  const [form, setForm] = useState({ name: '', description: '' })
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    imageUrl: '',
+  })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
@@ -34,14 +41,21 @@ export default function Home() {
     setLoading(true)
     setMessage('')
 
+    const payload = {
+      name: form.name,
+      description: form.description,
+      price: parseFloat(form.price),
+      imageUrl: form.imageUrl,
+    }
+
     const res = await fetch('/api/menu', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     })
 
     if (res.ok) {
-      setForm({ name: '', description: '' })
+      setForm({ name: '', description: '', price: '', imageUrl: '' })
       setMessage('Menu item added successfully!')
       fetchMenuItems() // refresh list
     } else {
@@ -71,6 +85,22 @@ export default function Home() {
           className="w-full p-2 border rounded"
           required
         />
+        <input
+          type="number"
+          placeholder="Price (BND)"
+          value={form.price}
+          onChange={e => setForm({ ...form, price: e.target.value })}
+          className="w-full p-2 border rounded"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Image URL"
+          value={form.imageUrl}
+          onChange={e => setForm({ ...form, imageUrl: e.target.value })}
+          className="w-full p-2 border rounded"
+          required
+        />
         <button
           type="submit"
           disabled={loading}
@@ -91,6 +121,12 @@ export default function Home() {
               <li key={item.id} className="border p-4 rounded">
                 <p className="font-bold">{item.name}</p>
                 <p className="text-gray-600">{item.description}</p>
+                <p className="text-green-700 font-semibold">BND {item.price.toFixed(2)}</p>
+                <img
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="w-32 h-32 object-cover mt-2 rounded"
+                />
                 <p className="text-sm text-gray-400">
                   Added on {new Date(item.createdAt).toLocaleString()}
                 </p>
