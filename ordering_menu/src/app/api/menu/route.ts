@@ -22,3 +22,9 @@ export async function POST(req: NextRequest) {
 }
   }
 
+export async function GET() {
+  const items = await prisma.menuItem.findMany({
+    orderBy: { createdAt: 'desc' },
+  })
+  return NextResponse.json(items)
+}
