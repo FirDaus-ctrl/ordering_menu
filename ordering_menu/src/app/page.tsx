@@ -1,14 +1,34 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-
+interface MenuItem {
+  id: number
+  name: string
+  description: string
+  createdAt: string
+}
 
 export default function Home() {
   const [form, setForm] = useState({ name: '', description: '' })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+
+  const fetchMenuItems = async () => {
+    try {
+      const res = await fetch('/api/menu', { method: 'GET' })
+      const data = await res.json()
+      setMenuItems(data)
+    } catch (err) {
+      console.error('Error fetching menu items:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchMenuItems()
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -23,6 +43,7 @@ export default function Home() {
     if (res.ok) {
       setForm({ name: '', description: '' })
       setMessage('Menu item added successfully!')
+      fetchMenuItems() // refresh list
     } else {
       const data = await res.json()
       setMessage(data.error || 'Failed to add menu item.')
@@ -59,6 +80,25 @@ export default function Home() {
         </button>
       </form>
       {message && <p>{message}</p>}
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">All Menu Items</h2>
+        {menuItems.length === 0 ? (
+          <p className="text-gray-500">No items found.</p>
+        ) : (
+          <ul className="space-y-4">
+            {menuItems.map(item => (
+              <li key={item.id} className="border p-4 rounded">
+                <p className="font-bold">{item.name}</p>
+                <p className="text-gray-600">{item.description}</p>
+                <p className="text-sm text-gray-400">
+                  Added on {new Date(item.createdAt).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </main>
   )
 }
