@@ -5,22 +5,32 @@ const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, description } = await req.json()
+    const body = await req.json() as {
+      name: string
+      description: string
+      price: number
+      imageUrl: string
+    }
 
-    if (!name || !description) {
-      return NextResponse.json({ error: 'Missing name or description' }, { status: 400 })
+    const { name, description, price, imageUrl } = body
+
+    if (!name || !description || !price || !imageUrl) {
+      return NextResponse.json(
+        { error: 'Missing name, description, price, or imageUrl' },
+        { status: 400 }
+      )
     }
 
     const newMenuItem = await prisma.menuItem.create({
-      data: { name, description },
+      data: { name, description, price, imageUrl },
     })
 
     return NextResponse.json(newMenuItem)
-} catch (error) {
-  console.error(error)
-  return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
-}
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
+}
 
 export async function GET() {
   const items = await prisma.menuItem.findMany({
